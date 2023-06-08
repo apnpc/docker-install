@@ -29,6 +29,11 @@ curl -fsSL https://test.docker.com -o test-docker.sh
 sh test-docker.sh
 ```
 
+这两个地址的脚本是同一个脚本，唯一不同的是，
+
+- get.docker.com ： DEFAULT_CHANNEL_VALUE="stable"
+- test.docker.com ： DEFAULT_CHANNEL_VALUE="test"
+
 从本仓库安装：
 
 ```shell
@@ -47,9 +52,10 @@ make shellcheck 用于在 Makefile 构建系统中运行 shellcheck 工具。这
 
 ## 法律
 
-*由我们的法律顾问提供给你。欲了解更多情况、请参阅本程序包中的[NOTICE](NOTICE)文件*。
+由我们的法律顾问提供给你。欲了解更多情况、请参阅本程序包中的[NOTICE](NOTICE)文件*。
 
 Docker的使用和转让可能会受到美国和其他政府的某些限制。
+
 使用和转让Docker可能会受到美国和其他政府的某些限制。
 
 你有责任确保你的使用和/或转让不会违反适用的法律。

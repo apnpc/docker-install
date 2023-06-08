@@ -1,112 +1,119 @@
 #!/bin/sh
+
+#当 set -e 被设置后，如果脚本中的任何命令返回非零退出状态（通常表示命令执行失败），那么整个脚本将立即退出。这种行为可以帮助你在脚本中发现和处理错误，避免错误被忽略而导致更大的问题。
 set -e
-# Docker Engine for Linux installation script.
+# Docker Engine for Linux安装脚本。
 #
-# This script is intended as a convenient way to configure docker's package
-# repositories and to install Docker Engine, This script is not recommended
-# for production environments. Before running this script, make yourself familiar
-# with potential risks and limitations, and refer to the installation manual
-# at https://docs.docker.com/engine/install/ for alternative installation methods.
+# 这个脚本旨在作为一种方便的方式来配置docker的包
+# 仓库和安装Docker引擎，这个脚本不建议用于生产环境。
+# 用于生产环境。在运行这个脚本之前，请先熟悉
+# 熟悉潜在的风险和限制，并参考安装手册
+#在https://docs.docker.com/engine/install/，了解其他的安装方法。
 #
-# The script:
+# 脚本：
 #
-# - Requires `root` or `sudo` privileges to run.
-# - Attempts to detect your Linux distribution and version and configure your
-#   package management system for you.
-# - Doesn't allow you to customize most installation parameters.
-# - Installs dependencies and recommendations without asking for confirmation.
-# - Installs the latest stable release (by default) of Docker CLI, Docker Engine,
-#   Docker Buildx, Docker Compose, containerd, and runc. When using this script
-#   to provision a machine, this may result in unexpected major version upgrades
-#   of these packages. Always test upgrades in a test environment before
-#   deploying to your production systems.
-# - Isn't designed to upgrade an existing Docker installation. When using the
-#   script to update an existing installation, dependencies may not be updated
-#   to the expected version, resulting in outdated versions.
+# - 需要`root`或`sudo`权限才能运行。
+# - 试图检测你的Linux发行版和版本，并配置你的
+# 软件包管理系统。
+# - 不允许你自定义大多数安装参数。
+# - 安装依赖关系和建议，不要求确认。
+# - 安装Docker CLI、Docker Engine的最新稳定版本（默认）、
+# Docker Buildx, Docker Compose, containerd, 和 runc. 当使用这个脚本
+#配置机器时，这可能会导致这些软件包的主要版本意外升级
+# 这些软件包的主要版本。在升级到生产系统之前，一定要在测试环境中测试升级
+#部署到你的生产系统。
+# - 不是为了升级现有的Docker安装而设计的。当使用该
+# 脚本来升级现有的安装，依赖的东西可能不会被更新到
+# 到预期的版本，从而导致过时的版本。
 #
-# Source code is available at https://github.com/docker/docker-install/
+# 源代码在 https://github.com/docker/docker-install/ 
 #
-# Usage
+# 用法
 # ==============================================================================
 #
-# To install the latest stable versions of Docker CLI, Docker Engine, and their
-# dependencies:
+# 要安装最新的Docker CLI、Docker Engine和它们的稳定版本的
+# 依赖项：
 #
-# 1. download the script
+# 1. 下载脚本
 #
-#   $ curl -fsSL https://get.docker.com -o install-docker.sh
+# $ curl -fsSL https://get.docker.com -o install-docker.sh
 #
-# 2. verify the script's content
+# 2. 验证脚本的内容
 #
-#   $ cat install-docker.sh
+# $ cat install-docker.sh
 #
-# 3. run the script with --dry-run to verify the steps it executes
+# 3. 用-dry-run运行脚本，以验证它所执行的步骤
 #
-#   $ sh install-docker.sh --dry-run
+# $ sh install-docker.sh --dry-run
 #
-# 4. run the script either as root, or using sudo to perform the installation.
+# 4. 以root身份运行该脚本，或者使用sudo来执行安装。
 #
-#   $ sudo sh install-docker.sh
+# $ sudo sh install-docker.sh
 #
-# Command-line options
+# 命令行选项
 # ==============================================================================
 #
 # --version <VERSION>
-# Use the --version option to install a specific version, for example:
+# 使用--版本选项来安装一个特定的版本，比如说：
 #
-#   $ sudo sh install-docker.sh --version 23.0
+# $ sudo sh install-docker.sh --version 23.0
 #
 # --channel <stable|test>
 #
-# Use the --channel option to install from an alternative installation channel.
-# The following example installs the latest versions from the "test" channel,
-# which includes pre-releases (alpha, beta, rc):
+# 使用 --channel 选项从其他安装通道进行安装。
+# 下面的例子从 "测试 "通道安装最新版本、
+# 其中包括预发布版本(alpha, beta, rc)：
 #
-#   $ sudo sh install-docker.sh --channel test
+# $ sudo sh install-docker.sh --channel test
 #
-# Alternatively, use the script at https://test.docker.com, which uses the test
-# channel as default.
+# 或者，使用 https://test.docker.com，该脚本将 test 通道作为默认值。
 #
 # --mirror <Aliyun|AzureChinaCloud>
 #
-# Use the --mirror option to install from a mirror supported by this script.
-# Available mirrors are "Aliyun" (https://mirrors.aliyun.com/docker-ce), and
-# "AzureChinaCloud" (https://mirror.azure.cn/docker-ce), for example:
+# 使用 --mirror 选项从本脚本支持的镜像中安装。
+# 可用的镜像是 "Aliyun" (https://mirrors.aliyun.com/docker-ce)，以及
+# "AzureChinaCloud" (https://mirror.azure.cn/docker-ce)，例如：
 #
-#   $ sudo sh install-docker.sh --mirror AzureChinaCloud
+# $ sudo sh install-docker.sh --mirror AzureChinaCloud
 #
 # ==============================================================================
 
 
-# Git commit from https://github.com/docker/docker-install when
-# the script was uploaded (Should only be modified by upload job):
+# 脚本上传时来自https://github.com/docker/docker-install 的 Git提交（应该只被上传工作修改）：
 SCRIPT_COMMIT_SHA="${LOAD_SCRIPT_COMMIT_SHA}"
 
-# strip "v" prefix if present
+# 如果存在 "v "字头，则剥离 "v "字头
 VERSION="${VERSION#v}"
 
-# The channel to install from:
-#   * stable
-#   * test
-#   * edge (deprecated)
-#   * nightly (unmaintained)
+# 选择安装通道:
+#   * stable 稳定版
+#   * test 测试版
+#   * edge (已废弃)
+#   * nightly (未维护)
+
+# 默认安装版本
 DEFAULT_CHANNEL_VALUE="stable"
 if [ -z "$CHANNEL" ]; then
 	CHANNEL=$DEFAULT_CHANNEL_VALUE
 fi
 
+# 默认下载链接
 DEFAULT_DOWNLOAD_URL="https://download.docker.com"
 if [ -z "$DOWNLOAD_URL" ]; then
 	DOWNLOAD_URL=$DEFAULT_DOWNLOAD_URL
 fi
 
+# 默认仓库
 DEFAULT_REPO_FILE="docker-ce.repo"
 if [ -z "$REPO_FILE" ]; then
 	REPO_FILE="$DEFAULT_REPO_FILE"
 fi
 
+# 参数处理
 mirror=''
 DRY_RUN=${DRY_RUN:-}
+
+# $# 表示传入的参数数量，-gt 0 判断是否还有未处理的参数。
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--channel)
@@ -131,6 +138,7 @@ while [ $# -gt 0 ]; do
 	shift $(( $# > 0 ? 1 : 0 ))
 done
 
+# 处理镜像
 case "$mirror" in
 	Aliyun)
 		DOWNLOAD_URL="https://mirrors.aliyun.com/docker-ce"
@@ -146,6 +154,7 @@ case "$mirror" in
 		;;
 esac
 
+# 处理版本通道
 case "$CHANNEL" in
 	stable|test)
 		;;
